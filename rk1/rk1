@@ -1,0 +1,121 @@
+# используется для сортировки
+from operator import itemgetter
+
+
+class Construct:
+    """Синтаксическая конструкция"""
+
+    def __init__(self, id, name, complexity, lang_id):
+        self.id = id
+        self.name = name
+        self.complexity = complexity
+        self.lang_id = lang_id
+
+
+class Lang:
+    """Язык программирования"""
+
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+
+class LangConstruct:
+
+    def __init__(self, lang_id, construct_id):
+        self.lang_id = lang_id
+        self.construct_id = construct_id
+
+    # Языки программирования
+
+langs = [
+    Lang(1, 'язык С++'),
+    Lang(2, 'язык Python'),
+    Lang(3, 'Java'),
+
+    Lang(11, 'язык C#'),
+    Lang(22, 'язык JavaScript'),
+]
+
+# Конструкции
+constructs = [
+    Construct(1, 'условный оператор if', 5, 1),
+    Construct(2, 'цикл for', 4, 1),
+    Construct(3, 'лямбда-выражение', 7, 1),
+    Construct(4, 'списковое включение', 6, 2),
+    Construct(5, 'декоратор', 9, 2),
+    Construct(6, 'генератор', 8, 2),
+    Construct(7, 'try-catch', 6, 3),
+    Construct(8, 'интерфейс', 7, 3),
+]
+
+langs_constructs = [
+    LangConstruct(1, 1),
+    LangConstruct(1, 2),
+    LangConstruct(2, 1),
+    LangConstruct(2, 2),
+    LangConstruct(2, 4),
+    LangConstruct(2, 5),
+    LangConstruct(2, 6),
+    LangConstruct(3, 1),
+    LangConstruct(3, 2),
+    LangConstruct(3, 7),
+    LangConstruct(3, 8),
+    LangConstruct(11, 1),
+    LangConstruct(11, 2),
+    LangConstruct(22, 4),
+    LangConstruct(22, 5),
+    LangConstruct(22, 6),
+]
+
+
+def main():
+    # Соединение данных один-ко-многим
+    one_to_many = [(c.name, c.complexity, l.name)
+                   for l in langs
+                   for c in constructs
+                   if c.lang_id == l.id]
+
+    # Соединение данных многие-ко-многим
+    many_to_many_temp = [(l.name, lc.lang_id, lc.construct_id)
+                         for l in langs
+                         for lc in langs_constructs
+                         if l.id == lc.lang_id]
+
+    many_to_many = [(c.name, c.complexity, lang_name )
+                    for lang_name, lang_id, construct_id in many_to_many_temp
+                    for c in constructs
+                    if c.id == construct_id]
+
+    print('Задание А1')
+    res_11 = sorted(one_to_many, key=itemgetter(2))
+    print(res_11)
+
+    print('\nЗадание А2')
+    res_12_unsorted = []
+    for l in langs:
+        l_constructs = list(filter(lambda i: i[2] == l.name, one_to_many))
+        if len(l_constructs) > 0:
+            #сложность конструкций языка
+            l_cmpx = [cmpx for _, cmpx, _ in l_constructs]
+            # Суммарная сложность конструкций языка
+            l_cmpx_sum = sum(l_cmpx)
+            res_12_unsorted.append((l.name, l_cmpx_sum))
+
+    res_12 = sorted(res_12_unsorted, key=itemgetter(1), reverse=True)
+    print(res_12)
+
+    print('\nЗадание А3')
+    res_13 = {}
+    for l in langs:
+        if 'язык' in l.name:
+            # Список конструкций языка
+            l_constructs = list(filter(lambda i: i[2] == l.name, many_to_many))
+            l_constructs_names = [x for x, _, _ in l_constructs]
+            # Добавляем результат в словарь
+            # ключ - отдел, значение - список фамилий
+            res_13[l.name] = l_constructs_names
+    print(res_13)
+
+if __name__ == '__main__':
+    main()
